@@ -1,0 +1,62 @@
+name: Tourism ML Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: turisum/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r turisum/requirements.txt
+
+      - name: Run end-to-end ML pipeline
+        run: python turisum/ci_pipeline.py
+
+      - name: Validate deployment script
+        run: python -m py_compile turisum/deployment/app.py
+
+      - name: Validate saved model and metadata
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import joblib
+
+          root = Path("turisum")
+          model = joblib.load(root / "model_building" / "best_model.joblib")
+          metadata = json.loads(
+              (root / "model_building" / "metadata.json").read_text()
+          )
+          assert hasattr(model, "predict_proba")
+          assert 0 < float(metadata["decision_threshold"]) < 1
+          print("Production artifacts validated.")
+          PY
+
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tourism-production-model
+          path: |
+            turisum/model_building/best_model.joblib
+            turisum/model_building/metadata.json
+            turisum/reports/model_comparison.csv

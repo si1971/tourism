@@ -1,0 +1,34 @@
+{
+  "model_name": "RandomForest",
+  "decision_threshold": 0.2025,
+  "target": "ProdTaken",
+  "raw_features": [
+    "Age",
+    "TypeofContact",
+    "CityTier",
+    "DurationOfPitch",
+    "Occupation",
+    "Gender",
+    "NumberOfPersonVisiting",
+    "NumberOfFollowups",
+    "ProductPitched",
+    "PreferredPropertyStar",
+    "MaritalStatus",
+    "NumberOfTrips",
+    "Passport",
+    "PitchSatisfactionScore",
+    "OwnCar",
+    "NumberOfChildrenVisiting",
+    "Designation",
+    "MonthlyIncome"
+  ],
+  "holdout_metrics": {
+    "accuracy": 0.8866749688667497,
+    "precision": 0.6403508771929824,
+    "recall": 0.9419354838709677,
+    "f1": 0.762402088772846,
+    "roc_auc": 0.9731979291119077,
+    "average_precision": 0.9125245159408903
+  },
+  "random_state": 42
+}
