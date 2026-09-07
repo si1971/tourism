@@ -1,5 +1,8 @@
 from pathlib import Path
 import json
+import sys
+
+import sklearn
 
 import joblib
 import numpy as np
@@ -207,6 +210,13 @@ metadata = {
     "raw_features": X_train.columns.tolist(),
     "holdout_metrics": {k: float(v) for k, v in metrics.items()},
     "random_state": RANDOM_STATE,
+    "environment": {
+        "python": sys.version.split()[0],
+        "scikit_learn": sklearn.__version__,
+        "joblib": joblib.__version__,
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+    },
 }
 with (MODEL_DIR / "metadata.json").open("w", encoding="utf-8") as file:
     json.dump(metadata, file, indent=2)

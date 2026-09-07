@@ -3,6 +3,7 @@ import json
 
 import joblib
 import pandas as pd
+import sklearn
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,14 +16,32 @@ st.set_page_config(
     layout="centered",
 )
 
-@st.cache_resource
-def load_artifacts():
-    model = joblib.load(MODEL_PATH)
-    with METADATA_PATH.open("r", encoding="utf-8") as file:
-        metadata = json.load(file)
-    return model, metadata
 
-model, metadata = load_artifacts()
+if not MODEL_PATH.is_file():
+    st.error(f"Model file not found: {MODEL_PATH}")
+    st.stop()
+
+if not METADATA_PATH.is_file():
+    st.error(f"Metadata file not found: {METADATA_PATH}")
+    st.stop()
+
+metadata = json.loads(METADATA_PATH.read_text(encoding="utf-8"))
+
+expected_sklearn = metadata.get("environment", {}).get("scikit_learn")
+if expected_sklearn and sklearn.__version__ != expected_sklearn:
+    st.error(
+        "Model/environment version mismatch. "
+        f"Model: scikit-learn {expected_sklearn}; "
+        f"Streamlit: scikit-learn {sklearn.__version__}. "
+        "Check turisum/deployment/requirements.txt and reboot the app."
+    )
+    st.stop()
+
+@st.cache_resource
+def load_model():
+    return joblib.load(MODEL_PATH)
+
+model = load_model()
 threshold = float(metadata["decision_threshold"])
 
 st.title("✈️ Tourism Package Purchase Prediction")
